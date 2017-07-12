@@ -333,4 +333,9 @@ Current key bindings:
 	DefineCommand(&CommandFunc{"replace-regexp", func(env *glisp.Glisp) { doReplaceRegexp() }, false})
 	DefineCommand(&CommandFunc{"shell-command", func(env *glisp.Glisp) { doShellCmd() }, false})
 	DefineCommand(&CommandFunc{"shell-command-on-region", func(env *glisp.Glisp) { doShellCmdRegion() }, false})
+	DefineCommand(&CommandFunc{"string-rectangle", func(env *glisp.Glisp) { doStringRectangle() }, false})
+	DefineCommand(&CommandFunc{"kill-rectangle", func(env *glisp.Glisp) { doKillRectangle() }, false})
+	DefineCommand(&CommandFunc{"delete-rectangle", func(env *glisp.Glisp) { doDeleteRectangle() }, false})
+	DefineCommand(&CommandFunc{"yank-rectangle", func(env *glisp.Glisp) { doYankRectangle() }, false})
+	DefineCommand(&CommandFunc{"copy-rectangle", func(env *glisp.Glisp) { doCopyRectangle() }, false})
 }

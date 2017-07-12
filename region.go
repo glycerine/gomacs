@@ -381,3 +381,103 @@ func FillString(s string) string {
 func doFillRegion() {
 	transposeRegionCmd(FillString)
 }
+
+func transposeRectangle(buf *EditorBuffer, startc, endc, startl, endl int, t func(string) string) {
+	transposeRegion(buf, 0, endc, startl, endl, func(s string) string {
+		lines := strings.Split(s, "\n")
+		for i, line := range lines {
+			ll := len(line)
+			if ll == 0 || startc > ll {
+				continue
+			}
+			rectbefore := line[:startc]
+			var rectafter, rect string
+			if endc >= ll || endc < startc {
+				rectafter = ""
+				rect = line[startc:]
+			} else {
+				rectafter = line[endc:]
+				rect = line[startc:endc]
+			}
+			lines[i] = rectbefore + t(rect) + rectafter
+		}
+		return strings.Join(lines, "\n")
+	})
+}
+
+func rectangleCmd(t func(string) string) {
+	regionCmd(func(buf *EditorBuffer, startc, endc, startl, endl int) {
+		transposeRectangle(buf, startc, endc, startl, endl, t)
+	})
+}
+
+func doStringRectangle() {
+	st := editorPrompt("String rectangle", nil)
+	rectangleCmd(func(string) string {
+		return st
+	})
+	Global.Input = "Replaced rectangle with " + st
+}
+
+func doDeleteRectangle() {
+	rectangleCmd(func(s string) string {
+		return ""
+	})
+	Global.Input = "Deleted rectangle"
+}
+
+func doKillRectangle() {
+	bb := bytes.Buffer{}
+	rectangleCmd(func(s string) string {
+		bb.WriteString(s)
+		bb.WriteRune('\n')
+		return ""
+	})
+	Global.Clipboard = bb.String()
+	Global.Input = "Killed rectangle"
+}
+
+func doCopyRectangle() {
+	od := Global.CurrentB.Dirty
+	bb := bytes.Buffer{}
+	rectangleCmd(func(s string) string {
+		bb.WriteString(s)
+		bb.WriteRune('\n')
+		return s
+	})
+	editorPopUndo()
+	editorPopUndo()
+	Global.Clipboard = bb.String()
+	Global.CurrentB.Dirty = od
+	Global.Input = "Copied rectangle"
+}
+
+func doYankRectangle() {
+	if Global.Clipboard == "" {
+		Global.Input = "Clipboard empty"
+		return
+	}
+	if Global.CurrentB.cy == Global.CurrentB.NumRows {
+		doYankRegion()
+		Global.Input = "Yanked rectangle"
+		return
+	}
+	lines := strings.Split(Global.Clipboard, "\n")
+	longest := 0
+	for _, line := range lines {
+		if len(line) > longest {
+			longest = len(line)
+		}
+	}
+	endl := Global.CurrentB.cy + len(lines)
+	if endl >= Global.CurrentB.NumRows {
+		Global.Input = "End of buffer"
+		return
+	}
+	i := -1
+	transposeRectangle(Global.CurrentB, Global.CurrentB.cx, Global.CurrentB.cx+longest, Global.CurrentB.cy, endl, func(st string) string {
+		i++
+		return lines[i] + st
+	})
+	Global.Input = "Yanked rectangle"
+}
