@@ -220,11 +220,11 @@ func editorFindCallback(query string, key string) {
 			current = 0
 		}
 		row := Global.CurrentB.Rows[current]
-		match := strings.Index(row.Render, query)
+		match := strings.Index(row.Data, query)
 		if match > -1 {
 			last_match = current
 			Global.CurrentB.cy = current
-			Global.CurrentB.cx = editorRowRxToCx(row, match)
+			Global.CurrentB.cx = match
 			Global.CurrentB.prefcx = Global.CurrentB.cx
 			Global.CurrentB.rowoff = Global.CurrentB.NumRows
 			saved_hl_line = current
@@ -292,7 +292,8 @@ func doQueryReplace() {
 			psl := len(prestring)
 			Global.CurrentB.cy = cy
 			Global.CurrentB.cx = match + psl
-			matchrx := utf8.RuneCountInString(row.Render[:editorRowCxToRx(row)])
+			cx := Global.CurrentB.cx
+			matchrx := utf8.RuneCountInString(row.Data[:cx])
 			Global.CurrentB.prefcx = Global.CurrentB.cx
 			Global.CurrentB.rowoff = Global.CurrentB.NumRows
 			saved_hl_line = cy
@@ -364,9 +365,9 @@ func doReplaceString() {
 	ql := len(orig)
 	nl := len(replace)
 	for cy, row := range Global.CurrentB.Rows {
-		match := strings.LastIndex(row.Render, orig)
+		match := strings.LastIndex(row.Data, orig)
 		if match != -1 {
-			count := strings.Count(row.Render, orig)
+			count := strings.Count(row.Data, orig)
 			matches += count
 			lines++
 			Global.CurrentB.cy = cy
@@ -411,7 +412,8 @@ func doQueryReplaceRegexp() {
 			psl := len(prestring)
 			Global.CurrentB.cy = cy
 			Global.CurrentB.cx = match[0] + psl
-			matchrx := utf8.RuneCountInString(row.Render[:editorRowCxToRx(row)])
+			cx := Global.CurrentB.cx
+			matchrx := utf8.RuneCountInString(row.Data[:cx])
 			Global.CurrentB.prefcx = Global.CurrentB.cx
 			Global.CurrentB.rowoff = Global.CurrentB.NumRows
 			saved_hl_line = cy

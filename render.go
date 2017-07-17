@@ -106,14 +106,26 @@ func editorDrawRows(starty, sy int, buf *EditorBuffer, gutsize int) {
 				}
 			}
 			row := buf.Rows[filerow]
-			if buf.coloff < row.RenderSize {
-				ts, off := trimString(row.Render, buf.coloff)
+			if buf.coloff < row.Size {
+				ts, off := trimString(row.Data, buf.coloff)
 				if Global.NoSyntax || buf.Highlighter == nil {
-					termutil.Printstring(ts, gutsize, y)
+					RenderRow(ts, gutsize, y)
 				} else {
 					row.HlPrint(gutsize, y, buf.coloff, off, ts)
 				}
 			}
+		}
+	}
+}
+
+func RenderRow(data string, x, y int) {
+	rx := 0
+	for _, ru := range data {
+		if ru == '\t' {
+			rx += Global.Tabsize
+		} else {
+			termutil.PrintRune(x+rx, y, ru, termbox.ColorDefault)
+			rx += termutil.Runewidth(ru)
 		}
 	}
 }
