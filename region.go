@@ -61,7 +61,6 @@ func bufKillRegion(buf *EditorBuffer, startc, endc, startl, endl int) {
 		// Append last row's data to first row
 		buf.Rows[startl].Data += row.Data
 		buf.Rows[startl].Size = len(buf.Rows[startl].Data)
-		rowUpdateRender(buf.Rows[startl])
 		Global.Clipboard = bb.String()
 
 		// Cut region out of rows
@@ -75,7 +74,7 @@ func bufKillRegion(buf *EditorBuffer, startc, endc, startl, endl int) {
 
 		// Update the buffer and return
 		updateLineIndexes()
-		editorReHighlightRow(buf.Rows[startl], buf)
+		buf.Highlight() // Slower? Maybe. But we're not doing this operation too often, so it should be okay.
 		editorAddRegionUndo(false, startc, endc,
 			startl, endl, Global.Clipboard)
 	}
@@ -154,14 +153,12 @@ func spitRegion(cx, cy int, region string) {
 	Global.CurrentB.prefcx = row.Size
 	if len(clipLines) > 1 {
 		// Insert more lines...
-		rowUpdateRender(row)
 		myrows := make([]*EditorRow, len(clipLines)-1)
 		mrlen := len(myrows)
 		for i := 0; i < mrlen; i++ {
 			newrow := &EditorRow{}
 			newrow.Data = clipLines[i+1]
 			newrow.Size = len(newrow.Data)
-			rowUpdateRender(newrow)
 			myrows[i] = newrow
 		}
 		Global.CurrentB.cy += mrlen
@@ -170,7 +167,6 @@ func spitRegion(cx, cy int, region string) {
 		if cx < len(data) {
 			myrows[mrlen-1].Data += data[cx:]
 			myrows[mrlen-1].Size = len(myrows[mrlen-1].Data)
-			rowUpdateRender(myrows[mrlen-1])
 		}
 
 		if cy < Global.CurrentB.NumRows {

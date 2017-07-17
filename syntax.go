@@ -12,7 +12,7 @@ var defs []*highlight.Def
 
 // These functions implement highlight's LineStates interface for EditorBuffer
 func (buf *EditorBuffer) Line(n int) string {
-	return buf.Rows[n].Render
+	return buf.Rows[n].Data
 }
 
 func (buf *EditorBuffer) LinesNum() int {
@@ -81,8 +81,12 @@ func (row *EditorRow) HlPrint(x, y, offset, runeoff int, ts string) {
 			}
 			color = getColorForGroup(groupi)
 		}
-		termutil.PrintRune(x+os, y, ru, color)
-		os += termutil.Runewidth(ru)
+		if ru == '\t' {
+			os += Global.Tabsize
+		} else {
+			termutil.PrintRune(x+os, y, ru, color)
+			os += termutil.Runewidth(ru)
+		}
 		ri++
 	}
 }

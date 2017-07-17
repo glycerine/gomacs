@@ -116,7 +116,6 @@ func replaceBufferWithShellCommand(buf *EditorBuffer, com string, args []string,
 		newrow.Data = line
 		newrow.idx = i
 		newrow.Size = len(line)
-		rowUpdateRender(newrow)
 		buf.Rows[i] = newrow
 	}
 	if buf.Highlighter != nil {

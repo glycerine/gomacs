@@ -20,13 +20,11 @@ import (
 )
 
 type EditorRow struct {
-	idx        int
-	Size       int
-	Data       string
-	RenderSize int
-	Render     string
-	HlState    highlight.State
-	HlMatches  highlight.LineMatch
+	idx       int
+	Size      int
+	Data      string
+	HlState   highlight.State
+	HlMatches highlight.LineMatch
 }
 
 type EditorBuffer struct {
@@ -123,27 +121,6 @@ func saveBuffersKillEmacs(env *glisp.Glisp) {
 	}
 }
 
-func rowUpdateRender(row *EditorRow) {
-	tabs := 0
-	for _, rv := range row.Data {
-		if rv == '\t' {
-			tabs++
-		}
-	}
-	var buffer bytes.Buffer
-	row.RenderSize = row.Size + tabs*(Global.Tabsize-1) + 1
-	for _, rv := range row.Data {
-		if rv == '\t' {
-			for i := 0; i < Global.Tabsize; i++ {
-				buffer.WriteByte(' ')
-			}
-		} else {
-			buffer.WriteRune(rv)
-		}
-	}
-	row.Render = buffer.String()
-}
-
 func editorReHighlightRow(row *EditorRow, buf *EditorBuffer) {
 	if buf.Highlighter != nil {
 		curstate := buf.State(row.idx)
@@ -160,7 +137,6 @@ func editorReHighlightRow(row *EditorRow, buf *EditorBuffer) {
 }
 
 func editorUpdateRow(row *EditorRow, buf *EditorBuffer) {
-	rowUpdateRender(row)
 	editorReHighlightRow(row, buf)
 }
 
@@ -172,7 +148,7 @@ func updateLineIndexes() {
 
 func editorAppendRow(line string) {
 	Global.CurrentB.Rows = append(Global.CurrentB.Rows, &EditorRow{Global.CurrentB.NumRows,
-		len(line), line, 0, "", nil, nil})
+		len(line), line, nil, nil})
 	editorUpdateRow(Global.CurrentB.Rows[Global.CurrentB.NumRows], Global.CurrentB)
 	Global.CurrentB.NumRows++
 	Global.CurrentB.Dirty = true
@@ -196,7 +172,7 @@ func editorInsertRow(at int, line string) {
 	}
 	Global.CurrentB.Rows = append(Global.CurrentB.Rows, nil)
 	copy(Global.CurrentB.Rows[at+1:], Global.CurrentB.Rows[at:])
-	Global.CurrentB.Rows[at] = &EditorRow{at, len(line), line, 0, "", nil, nil}
+	Global.CurrentB.Rows[at] = &EditorRow{at, len(line), line, nil, nil}
 	editorUpdateRow(Global.CurrentB.Rows[at], Global.CurrentB)
 	Global.CurrentB.NumRows++
 	Global.CurrentB.Dirty = true
